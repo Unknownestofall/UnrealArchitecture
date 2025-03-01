@@ -4,6 +4,7 @@
 #include "Ship.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AShip::AShip(){
@@ -38,6 +39,14 @@ void AShip::BeginPlay(){
 void AShip::Tick(float DeltaTime){
 	Super::Tick(DeltaTime);
 
+	if (GEngine)
+	{
+		CurrentVelocity = GetVelocity().Length();
+		GEngine->AddOnScreenDebugMessage(1,
+			INDEFINITELY_LOOPING_DURATION,
+			FColor::Red,
+			FString::Printf(TEXT("CurrentVelocity: %f"), CurrentVelocity));
+	}
 }
 
 // Called to bind functionality to input
@@ -46,8 +55,14 @@ void AShip::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent){
 	if (UEnhancedInputComponent* EnhancedInput = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)){
 		EnhancedInput->BindAction(PropelUpAction, ETriggerEvent::Triggered, this, &AShip::PropelUp);
 		EnhancedInput->BindAction(ShipRotationAction, ETriggerEvent::Triggered, this, &AShip::ShipRotation);
-
 	}
+}
+void AShip::NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp,
+	bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit){
+
+	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
+
+	HandleShipLanding();
 }
 void AShip::PropelUp(const FInputActionValue& Value){
 	if (bool CurrentValue = Value.Get<bool>()){
@@ -62,6 +77,20 @@ void AShip::ShipRotation(const FInputActionValue& Value){
 		ShipMesh->AddTorqueInRadians(Torque, NAME_None, true);
 	}
 }
+bool AShip::IsLandedSafely(){
+	FRotator CurrentRotation = GetActorRotation();
+	float AcceptableRollRange = 70.f;
 
+	return FMath::Abs(CurrentRotation.Roll) <= AcceptableRollRange;
+}
+void AShip::HandleShipLanding(){
+	if (!IsLandedSafely() || CurrentVelocity > MaxLandingVelocity ){
+		FName CurrentLevelName = *UGameplayStatics::GetCurrentLevelName(this,true);
+		UGameplayStatics::OpenLevel(GetWorld(), CurrentLevelName,false);
+	}else{
+		UE_LOG(LogTemp, Warning, TEXT("Safe land"));	
+	}
+	
+}
 
 
