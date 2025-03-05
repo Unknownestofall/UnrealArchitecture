@@ -2,6 +2,8 @@
 
 
 #include "Goal.h"
+
+#include "LanderGameMode.h"
 #include "Ship.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -38,8 +40,12 @@ void AGoal::NotifyHit(class UPrimitiveComponent* MyComp,AActor* Other,class UPri
 void AGoal::HandleGoalReached(){
 	if (!HasBeenHit){
 		HasBeenHit = true;
-		FName CurrentLevelName = *UGameplayStatics::GetCurrentLevelName(this,true);
-		UGameplayStatics::OpenLevel(GetWorld(), CurrentLevelName,false);
+		//FName CurrentLevelName = *UGameplayStatics::GetCurrentLevelName(this,true);
+		//UGameplayStatics::OpenLevel(GetWorld(), CurrentLevelName,false);
+		if (ALanderGameMode* LanderGameMode = Cast<ALanderGameMode>(UGameplayStatics::GetGameMode(this))){
+			LanderGameMode->StopTimer();
+			LanderGameMode->LoadNextLevel();
+		}
 	}
 }
 
