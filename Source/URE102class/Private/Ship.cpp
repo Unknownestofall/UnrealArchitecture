@@ -65,6 +65,8 @@ void AShip::NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UP
 	HandleShipLanding();
 }
 void AShip::PropelUp(const FInputActionValue& Value){
+	if (!bIsInputEnabled){ return; }
+	
 	if (bool CurrentValue = Value.Get<bool>()){
 		const FVector WorldImpulseVector = FVector(0,0,1) * ImpulseStrength;
 		const FVector LocalImpulse = GetActorRotation().RotateVector(WorldImpulseVector);
@@ -72,6 +74,7 @@ void AShip::PropelUp(const FInputActionValue& Value){
 	}
 }
 void AShip::ShipRotation(const FInputActionValue& Value){
+	if (!bIsInputEnabled){ return; }
 	if (float CurrentValue = Value.Get<float>()){
 		const FVector Torque = FVector(1,0,0) * CurrentValue * TorqueStrength;
 		ShipMesh->AddTorqueInRadians(Torque, NAME_None, true);
@@ -90,7 +93,8 @@ void AShip::HandleShipLanding(){
 	}else{
 		UE_LOG(LogTemp, Warning, TEXT("Safe land"));	
 	}
-	
 }
-
+void AShip::IsGoalReached(){
+	bIsInputEnabled = false;
+}
 

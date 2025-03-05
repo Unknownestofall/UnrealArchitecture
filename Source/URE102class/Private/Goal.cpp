@@ -2,10 +2,12 @@
 
 
 #include "Goal.h"
+#include "Goal.h"
 
 #include "LanderGameMode.h"
 #include "Ship.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
 
 // Sets default values
 AGoal::AGoal()
@@ -26,7 +28,14 @@ void AGoal::BeginPlay()
 void AGoal::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
+	if (bWaitingForParticleFX){
+		if (CelebrationEffectComponent && !CelebrationEffectComponent->IsActive()){
+			if (ALanderGameMode* LanderGameMode = Cast<ALanderGameMode>(UGameplayStatics::GetGameMode(this))){
+				LanderGameMode->LoadNextLevel();
+			}
+		}
+	}
 }
 void AGoal::NotifyHit(class UPrimitiveComponent* MyComp,AActor* Other,class UPrimitiveComponent* OtherComp,
 	bool bSelfMoved,FVector HitLocation,FVector HitNormal,FVector NormalImpulse,const FHitResult& Hit){
@@ -35,16 +44,26 @@ void AGoal::NotifyHit(class UPrimitiveComponent* MyComp,AActor* Other,class UPri
 	//functionality of hit event
 	if (Other && Other != this && Other ->IsA(AShip::StaticClass())){
 		HandleGoalReached();
+		
+		AShip* Ship = Cast<AShip>(Other);
+		Ship->IsGoalReached();
 	}
 }
 void AGoal::HandleGoalReached(){
 	if (!HasBeenHit){
 		HasBeenHit = true;
-		//FName CurrentLevelName = *UGameplayStatics::GetCurrentLevelName(this,true);
-		//UGameplayStatics::OpenLevel(GetWorld(), CurrentLevelName,false);
-		if (ALanderGameMode* LanderGameMode = Cast<ALanderGameMode>(UGameplayStatics::GetGameMode(this))){
-			LanderGameMode->StopTimer();
-			LanderGameMode->LoadNextLevel();
+
+		if (CelebrationEffect){
+			FVector EffectLocation = GetActorLocation();
+			CelebrationEffectComponent =
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CelebrationEffect, EffectLocation, GetActorRotation());
+			
+			if (CelebrationEffectComponent){
+				bWaitingForParticleFX = true;
+				if (ALanderGameMode* LanderGameMode = Cast<ALanderGameMode>(UGameplayStatics::GetGameMode(this))){
+					LanderGameMode->StopTimer();
+				}
+			}
 		}
 	}
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "NiagaraComponent.h"
 #include "Goal.generated.h"
 
 UCLASS()
@@ -14,6 +15,9 @@ class URE102CLASS_API AGoal : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AGoal();
+	
+	UPROPERTY(EditAnywhere, Category = "FX")
+	UNiagaraSystem* CelebrationEffect;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -26,6 +30,8 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(VisibleAnywhere) bool HasBeenHit = false;
-	
+	bool HasBeenHit = false;
+	bool bWaitingForParticleFX = false;
+
+	UPROPERTY() UNiagaraComponent* CelebrationEffectComponent;
 };

@@ -3,6 +3,7 @@
 
 #include "LanderGameMode.h"
 
+#include "Ship.h"
 #include "Data/LevelTimerData.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -19,6 +20,7 @@ ALanderGameMode::ALanderGameMode(){
 	}else{
 		UE_LOG(LogTemp, Warning, TEXT("did not find DT "));
 	}
+	DefaultPawnClass = AShip::StaticClass();
 }
 void ALanderGameMode::BeginPlay(){
 	Super::BeginPlay();
@@ -33,15 +35,29 @@ void ALanderGameMode::BeginPlay(){
 		}
 	}
 	Timer = CountdownTimer;
+	APlayerController* PlayerController = Cast<APlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (PlayerController){
+		FName CurLevelName = *UGameplayStatics::GetCurrentLevelName(this);
+		if (CurLevelName == "MainMenu"){
+			PlayerController->bShowMouseCursor = true;
+			PlayerController->SetInputMode(FInputModeUIOnly());
+		}else{
+			PlayerController->bShowMouseCursor = false;
+			PlayerController->SetInputMode(FInputModeGameOnly());
+		}
+	}
 }
 void ALanderGameMode::Tick(float DeltaTime){
 	Super::Tick(DeltaTime);
 	
 	if (bIsTimerRunning){
-		Timer -= DeltaTime;
-		if (Timer <= 0.f){
-			FName CurOpenLevel = *UGameplayStatics::GetCurrentLevelName(this);
-			UGameplayStatics::OpenLevel(this, CurOpenLevel);
+		if (Timer > 0)
+		{
+			Timer -= DeltaTime;
+			if (Timer <= 0.f){
+				FName CurOpenLevel = *UGameplayStatics::GetCurrentLevelName(this);
+				UGameplayStatics::OpenLevel(this, CurOpenLevel);
+			}
 		}
 	}
 	if (GEngine){

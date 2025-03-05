@@ -31,6 +31,8 @@ public:
 	
 	bool IsLandedSafely();
 	void HandleShipLanding();
+
+	void IsGoalReached();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -64,4 +66,5 @@ private:
 	UPROPERTY(VisibleAnywhere) UCameraComponent* ViewCamera;
 
 	UPROPERTY(VisibleAnywhere) float CurrentVelocity;
+	UPROPERTY(VisibleAnywhere) bool bIsInputEnabled = true;
 };
