@@ -38,9 +38,8 @@ void AShip::BeginPlay(){
 // Called every frame
 void AShip::Tick(float DeltaTime){
 	Super::Tick(DeltaTime);
-
-	if (GEngine)
-	{
+	
+	if (GEngine && UGameplayStatics::GetCurrentLevelName(this) != "Menu"){
 		CurrentVelocity = GetVelocity().Length();
 		GEngine->AddOnScreenDebugMessage(1,
 			INDEFINITELY_LOOPING_DURATION,
@@ -90,8 +89,6 @@ void AShip::HandleShipLanding(){
 	if (!IsLandedSafely() || CurrentVelocity > MaxLandingVelocity ){
 		FName CurrentLevelName = *UGameplayStatics::GetCurrentLevelName(this,true);
 		UGameplayStatics::OpenLevel(GetWorld(), CurrentLevelName,false);
-	}else{
-		UE_LOG(LogTemp, Warning, TEXT("Safe land"));	
 	}
 }
 void AShip::IsGoalReached(){

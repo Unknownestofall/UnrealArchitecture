@@ -32,7 +32,8 @@ protected:
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	void Collect();
+
+	UPROPERTY(EditAnywhere) USoundBase* CollectSound;
 private:
-	
 
 };

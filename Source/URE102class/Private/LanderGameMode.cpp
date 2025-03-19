@@ -15,10 +15,7 @@ ALanderGameMode::ALanderGameMode(){
 		DataTableAsset(TEXT("/Script/Engine.DataTable'/Game/DataTables/LevelTimerData.LevelTimerData'"));
 
 	if (DataTableAsset.Succeeded()){
-		UE_LOG(LogTemp, Warning, TEXT("DT Loaded"));
 		LevelTimerDataTable = DataTableAsset.Object;
-	}else{
-		UE_LOG(LogTemp, Warning, TEXT("did not find DT "));
 	}
 	DefaultPawnClass = AShip::StaticClass();
 }
@@ -26,7 +23,6 @@ void ALanderGameMode::BeginPlay(){
 	Super::BeginPlay();
 	if (LevelTimerDataTable != nullptr){
 		FName CurLevelName = *UGameplayStatics::GetCurrentLevelName(this);
-
 		for (auto It : LevelTimerDataTable->GetRowMap()){
 			const FLevelTimerData* Row = reinterpret_cast<const FLevelTimerData*>(It.Value);
 			if (Row->LevelName == CurLevelName){
@@ -34,11 +30,13 @@ void ALanderGameMode::BeginPlay(){
 			}
 		}
 	}
+
 	Timer = CountdownTimer;
+	
 	APlayerController* PlayerController = Cast<APlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	if (PlayerController){
 		FName CurLevelName = *UGameplayStatics::GetCurrentLevelName(this);
-		if (CurLevelName == "MainMenu"){
+		if (CurLevelName == "Menu" || CurLevelName == "End"){
 			PlayerController->bShowMouseCursor = true;
 			PlayerController->SetInputMode(FInputModeUIOnly());
 		}else{
@@ -51,8 +49,7 @@ void ALanderGameMode::Tick(float DeltaTime){
 	Super::Tick(DeltaTime);
 	
 	if (bIsTimerRunning){
-		if (Timer > 0)
-		{
+		if (Timer > 0){
 			Timer -= DeltaTime;
 			if (Timer <= 0.f){
 				FName CurOpenLevel = *UGameplayStatics::GetCurrentLevelName(this);
@@ -60,7 +57,8 @@ void ALanderGameMode::Tick(float DeltaTime){
 			}
 		}
 	}
-	if (GEngine){
+	if (GEngine &&(UGameplayStatics::GetCurrentLevelName(this) != "Menu" ||
+			UGameplayStatics::GetCurrentLevelName(this) != "End")){
 		GEngine->AddOnScreenDebugMessage(2,INDEFINITELY_LOOPING_DURATION, FColor::Blue,
 			FString::Printf(TEXT("Time Remaining: %f"),Timer));
 	}

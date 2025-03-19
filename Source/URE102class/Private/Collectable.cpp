@@ -43,6 +43,9 @@ void ACollectable::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 void ACollectable::Collect(){
 	if (ALanderGameMode* LanderGameMode = Cast<ALanderGameMode>(UGameplayStatics::GetGameMode(this))){
 		LanderGameMode->IncreaseTimer(TimeToAdd);
+		if (CollectSound != nullptr){
+			UGameplayStatics::PlaySoundAtLocation(this, CollectSound,GetActorLocation(),GetActorRotation());
+		}
 		Destroy();
 	}
 }

@@ -3,7 +3,9 @@
 
 #include "CustomTrigger.h"
 
+#include "Ship.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
 UCustomTrigger::UCustomTrigger()
@@ -39,8 +41,7 @@ void UCustomTrigger::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 }
 void UCustomTrigger::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult){
-	if (OtherActor && OtherActor != GetOwner()){
-		//TODO: restart level
-		UE_LOG(LogTemp, Error, TEXT("Out of bounds!"));
+	if (OtherActor && OtherActor != GetOwner() && OtherActor->IsA(AShip::StaticClass())){
+		UGameplayStatics::OpenLevel(this, FName(UGameplayStatics::GetCurrentLevelName(this)));
 	}
 }
