@@ -2,7 +2,6 @@
 
 
 #include "Goal.h"
-#include "Goal.h"
 
 #include "LanderGameMode.h"
 #include "Ship.h"
